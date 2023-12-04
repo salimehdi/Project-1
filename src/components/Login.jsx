@@ -4,26 +4,78 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../App.css";
 import "../fonts.css";
-function Login() {
-
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import Cookies from "js-cookie";
+import { set } from "mongoose";
+function Login({setChanging , changing}) {
   const [pass, setPass] = useState("");
   const [mail, setMail] = useState("");
   const [err, setErr] = useState("");
-  function loginf () {
+  const navigate = useNavigate();
+  const [passVisible, setPassVisible] = useState(false);
+  const [placeHolder, setPlaceHolder] = useState(true);
+  const [placeHolder1, setPlaceHolder1] = useState(true);
+  const eye = {
+    position: "absolute",
+    right: "15px",
+    cursor: "pointer",
+    color: "var(--acellbi-theme)",
+  };
+  const name = {
+    opacity: `${placeHolder ? "0.3" : "1"}`,
+    position: "absolute",
+    left: "15px",
+    cursor: "pointer",
+    transition: "all 0.3s ease-in-out", 
+    transform: `${placeHolder ? "translateY(0)" : "translateY(-140%)"}`,
+    backgroundColor: `${placeHolder ? "transparent" : "#293649"}`,
+    fontSize: `${placeHolder ? "16px" : "12px"}`,
+  };
+  const email = {
+    opacity: `${placeHolder1 ? "0.3" : "1"}`,
+    position: "absolute",
+    left: "15px",
+    cursor: "pointer",
+    transition: "all 0.3s ease-in-out", 
+    transform: `${placeHolder1 ? "translateY(0)" : "translateY(-140%)"}`,
+    backgroundColor: `${placeHolder1 ? "transparent" : "#2E3B4E"}`,
+    fontSize: `${placeHolder1 ? "16px" : "12px"}`,
+  };
+
+  async function loginf() {
     console.log("Started");
-    const navigate = useNavigate();
-    (async () => {
-      const res = await axios.post("http://localhost:8000/api/login", {
-        email: mail,
-        password: pass,
-      })
-      if (res.data.error) {
-        setErr(res.data.error);
+    setErr("");
+    
+    try {
+      const options = {
+        method:"POST",
+        url:"http://localhost:8000/api/auth/signin",
+        withCredentials: true,
+        credentials: "include",
+        data:{
+          email: mail,
+          password: pass,  
+        }
+      }
+      const res = await axios.request(options)
+
+      // const res = await axios.post("http://localhost:8000/api/auth/signin", {
+      //   email: mail,
+      //   password: pass,
+      //   withCredentials: true,
+      // });
+      // console.log(res)
+      
+      if (res.data && res.data.message){
+      setErr(res.data && res.data.message);
       } else {
+        setChanging(!changing)
         navigate("/");
       }
-    })()
-  };
+    } catch (e) {
+
+    }
+  }
   return (
     <div className="relative w-[100%] h-[90vh] bg-slate-900 flex justify-center items-center">
       <svg
@@ -47,41 +99,69 @@ function Login() {
         />
       </svg>
       <div className=" flex flex-col justify-evenly items-center w-[300px] h-[300px] rounded-2xl bg-gradient-to-t to-slate-700 from-slate-800 ">
-      {err && <h2 className="text-red-500 font-[poppins]" >{err}</h2>}
-        
-          <div className="flex flex-col gap-5 items-center justify-center h-[100%]">
-            <h1 className="text-4xl font-[unbounded] text-white font-bold">
-              Log In
-            </h1>
+        {err && <h2 className="text-red-500 font-[poppins]">{err}</h2>}
+
+        <div className="flex flex-col gap-5 items-center justify-center h-[100%]">
+          <h1 className="text-4xl font-[unbounded] text-white font-bold">
+            Log In
+          </h1>
+          
+
+          <label className="flex flex-row justify-between items-center w-[80%] h-[40px] rounded-md bg-transparent text-white px-2 relative">
+            <div style={email}>Email</div>
             <input
-            value={mail}
-            onChange={(e) => {
-              setMail(e.target.value);
-            }}
+              value={mail}
+              onChange={(e) => {
+                setMail(e.target.value);
+              }}
               type="text"
-              placeholder="Enter your email"
-              className="w-[80%] h-[40px] rounded-md bg-transparent border-2 border-white outline-none text-white px-2"
+              className="w-[100%] h-[40px] rounded-md bg-transparent border-2 text-white px-2"
+              onFocus={() => setPlaceHolder1(false)}
+              onBlur={(e) => {
+                if (e.target.value === "") setPlaceHolder1(true)
+              }}
             />
+          </label>
+
+          <label className="flex flex-row justify-between items-center w-[80%] h-[40px] rounded-md bg-transparent text-white px-2 relative">
+            <div style={name}>Password</div>
             <input
-            value={pass}
-            onChange={(e) => {
-              setPass(e.target.value);
-            }}
-              type="text"
-              placeholder="Enter your password"
-              className="w-[80%] h-[40px] rounded-md bg-transparent border-2 border-white outline-none text-white px-2"
+              value={pass}
+              onChange={(e) => {
+                setPass(e.target.value);
+              }}
+              type={`${passVisible ? "text" : "password"}`}
+              className="w-[100%] h-[40px] rounded-md bg-transparent border-2 text-white px-2"
+              onFocus={() => setPlaceHolder(false)}
+              onBlur={(e) => {
+                if (e.target.value === "") setPlaceHolder(true)
+              }}
             />
-            <button onClick={loginf} type="button" className="w-[80%] h-[40px] rounded-md text-slate-900 bg-gradient-to-t to-slate-300 from-slate-400 font-bold">
-              Login
-            </button>
-            <p className="text-white">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-rose-500">
-                Sign Up
-              </Link>
-            </p>
-          </div>
-        
+            {passVisible ? (
+              <FaEyeSlash
+                style={eye}
+                onClick={() => {
+                  setPassVisible(!passVisible)
+                }}
+              />
+            ) : (
+              <FaEye style={eye} onClick={() => setPassVisible(!passVisible)} />
+            )}
+          </label>
+          <button
+            onClick={loginf}
+            type="button"
+            className="w-[80%] h-[40px] rounded-md text-slate-900 bg-gradient-to-t to-slate-300 from-slate-400 font-bold"
+          >
+            Login
+          </button>
+          <p className="text-white">
+            Don"t have an account?{" "}
+            <Link to="/signup" className="text-rose-500">
+              Sign Up
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

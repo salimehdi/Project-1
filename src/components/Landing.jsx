@@ -1,10 +1,33 @@
-import React from "react";
+import React, { useEffect , useState } from "react";
 import { Link } from "react-router-dom";
 import img from "../assets/center-pic.png";
 import {FaCaretRight} from "react-icons/fa";
 import "../App.css";
+import axios from "axios";
+import Cookies from "js-cookie";
 
-function Landing() {
+function Landing({changing}) {
+  const [role, setRole] = useState("")
+  async function getUser () {
+    try {
+      const options = {
+        method:"GET",
+        url:"http://localhost:8000/api/auth/user",
+        withCredentials: true,
+        credentials: "include",
+      }
+      const res = await axios.request(options)
+      setRole(res.data.data.role)
+    } catch (e) {
+      setRole("") 
+      console.log(e.message)
+    }
+  }
+
+  useEffect(() => {
+    getUser()
+  },[changing])
+
   return (
     <>
       <div className="border-b-[2.98px] border-black h-[90vh] gap-[100px] w-[100%] flex justify-center items-center  bg-gradient-to-t from-cyan-700 to-cyan-900">
@@ -23,6 +46,11 @@ function Landing() {
           </span>
         </span>
       </div>
+
+
+
+      {
+        role !== "Designer" &&
       <div className=" border-b-[2.98px] border-black md:h-[90vh] h-[110vh] w-[100%] relative flex flex-col md:flex-row justify-center items-center bg-rose-500 gap-[100px]">
         <svg
           className="absolute top-[-2.98px] mx-auto w-[300px]"
@@ -52,11 +80,16 @@ function Landing() {
 	C14.9,4,12.3,1.5,6.4,0.5C4.6,0.2,2.5,0,0,0H123z"
           />
         </svg>
-        <span className="p-10 rounded-tr-[120px] rounded-br-[120px] md:mr-10  font-[Unbounded] border-[15px] border-black md:w-[37%] w-[70%] font-bold md:text-7xl text-4xl text-white flex flex-col gap-10 bg-[url('https://pngimg.com/uploads/bokeh/bokeh_PNG7.png')] bg-cover ">
+        <span className='p-10 rounded-tr-[120px] rounded-br-[120px] md:mr-10  font-[Unbounded] border-[15px] border-black md:w-[37%] w-[70%] font-bold md:text-7xl text-4xl text-white flex flex-col gap-10 bg-[url("https://pngimg.com/uploads/bokeh/bokeh_PNG7.png")] bg-cover '>
           <span>Buy</span> <span>Top</span> <span>Art.</span>
         </span>
         <button className="font-[unbounded] text-2xl font-bold border-[10px] text-white rounded-full p-[20px] hover:bg-rose-700 border-rose-300 active:border-rose-400 flex items-center gap-10" >Explore the store<FaCaretRight className="text-4xl duration-300"/></button>
       </div>
+      }
+
+
+      {
+        role !== "Buyer" &&
       <div className=" md:h-[90vh] h-[110vh] w-[100%] relative flex flex-col md:flex-row justify-center items-center bg-[#FCBB6D] gap-[100px]">
         <svg
           className="absolute top-[-2.97px] mx-auto w-[300px]"
@@ -80,17 +113,19 @@ function Landing() {
             />
           </g>
           <path
-            fill="rgb(244 63 94)"
+            fill={`${(role === "Designer") ? "#0e7490" : "rgb(244 63 94)"}`}
             d="M123,0c-2.3,0-4.3,0.2-6.2,0.5c-9.3,1.6-14.4,6.6-18.9,11.2c-4.6,4.6-8.5,8.5-15.8,8.5
 	c-6.3,0-10.6-3.2-15.1-6.6c-4.9-3.7-9.9-7.5-18-7.5c-4.6,0-7.7,1.8-10.7,3.5c-3.5,2-6.9,3.9-12.2,2.3c-4.4-1.3-6.6-3.4-8.8-5.5
 	C14.9,4,12.3,1.5,6.4,0.5C4.6,0.2,2.5,0,0,0H123z"
           />
         </svg>
-        <span className=" p-10 rounded-tr-[120px] rounded-br-[120px] md:mr-10 font-[Unbounded] border-[15px] border-[#465C7A] md:w-[45%] w-[70%] font-bold md:text-7xl text-4xl text-red-500 bg-[url('https://pngimg.com/uploads/bokeh/bokeh_PNG7.png')] bg-cover flex flex-col gap-10 ">
+        <span className=' p-10 rounded-tr-[120px] rounded-br-[120px] md:mr-10 font-[Unbounded] border-[15px] border-[#465C7A] md:w-[45%] w-[70%] font-bold md:text-7xl text-4xl text-red-500 bg-[url("https://pngimg.com/uploads/bokeh/bokeh_PNG7.png")] bg-cover flex flex-col gap-10 '>
           <span>Make</span> <span>Sell</span> <span>Earn.</span>
         </span>
         <button className="font-[unbounded] text-2xl font-bold border-[10px] text-[#465C7A] rounded-full p-[20px] hover:bg-orange-200 border-orange-100 active:border-orange-400 flex items-center gap-10" >Work With Us<FaCaretRight className="text-4xl duration-300"/></button>
       </div>
+
+      }
     </>
   );
 }
